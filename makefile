@@ -9,8 +9,8 @@ CLOCK = 9600000
 SRC = $(wildcard src/*.c)
 OBJ = $(SRC:.c=.o)
 
-build : $(OBJ)
-	$(CC) -o $@ $(OBJ) -L/usr/lib $(LIBS) $(OPTIMIZATION)
+out.hex: out.elf
+	avr-objcopy -j .text -j .data -O ihex out.elf out.hex
 
 program: out.hex
 	avrdude -p $(UC) -c stk500v1 -P $(PORT) -b 19200 -q -U flash:w:out.hex
@@ -24,9 +24,6 @@ fuses:
 out.elf: $(OBJ)
 	$(CC) -gcc -g -DF_CPU=$(CLOCK) -Wall -Os -mmcu=$(UC) -o out.elf $(OBJ)
 	avr-size out.elf
-
-out.hex: out.elf
-	avr-objcopy -j .text -j .data -O ihex out.elf out.hex
 
 clean :
 	$(RM) out.elf
