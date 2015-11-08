@@ -6,7 +6,7 @@ PORT = com5
 
 FUSES = -U lfuse:w:0x7a:m -U hfuse:w:0xff:m
 CLOCK = 9600000
-SRC = $(wildcard src/*.c)
+SRC = $(wildcard src/*.c) src/wavetables.h
 OBJ = $(SRC:.c=.o)
 
 out.hex: out.elf
@@ -22,12 +22,16 @@ fuses:
 	$(CC) $(CFLAGS) $(OPTIMIZATION) -DF_CPU=$(CLOCK) -mmcu=$(UC) $< -c -o $@
 
 out.elf: $(OBJ)
-	$(CC) -gcc -g -DF_CPU=$(CLOCK) -Wall -Os -mmcu=$(UC) -o out.elf $(OBJ)
+	$(CC) -DF_CPU=$(CLOCK) -Wall -Os -mmcu=$(UC) -o out.elf $(OBJ)
 	avr-size out.elf
+
+src/wavetables.h: tools/wavetables.py
+	python tools/wavetables.py > src/wavetables.h
 
 clean :
 	$(RM) out.elf
 	$(RM) out.hex
 	$(RM) tools/*.pyc
+	$(RM) src/wavetables.h
 	$(RM) src/*.o
 
