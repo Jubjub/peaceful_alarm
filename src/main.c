@@ -15,7 +15,7 @@ void interrupt_setup() {
     /* enable interrupts */
     sei();
     /* prescale timer interrupt */
-    TCCR0B |= PRESCALE0_256;
+    TCCR0B |= PRESCALE0_1;
 }
 
 void io_setup() {
@@ -24,18 +24,17 @@ void io_setup() {
     PORTB = 0;  
 }
 
-int note_change = 0;
+unsigned int overrun = 2;
+unsigned int acc = 0;
 
 ISR(TIM0_OVF_vect) {
-    PORTB ^= 1 << PB0;
-    if (++note_change > 20) {
-        TCCR0B = 0;
-        TCCR0B |= PRESCALE0_64;
+    if (++acc > (overrun / 10)) {
+        acc = 0;
+        PORTB ^= 1 << PB0;
     }
-    if (note_change > 50) {
-        TCCR0B = 0;
-        TCCR0B |= PRESCALE0_256;
-        note_change = 0;
+    overrun += 1;
+    if (overrun > 8000) {
+        //overrun = 0;
     }
 }
 
@@ -44,10 +43,8 @@ int main(void) {
     interrupt_setup();
     const int msecsDelayPost = 300;
     while (1) {
-        /*
-        PORTB ^= 1 << PB0;
         _delay_ms (msecsDelayPost);
-        */
+        overrun++;
     }
     return 0;
 }
